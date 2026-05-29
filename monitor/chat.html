@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLM 5.1 - Coding Assistant</title>
+<script src="https://js.puter.com/v2/"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  /* ═══════════════════════════════════
+     BASE & RESET
+  ═══════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  :root {
+    --bg-primary:    #0d1117;
+    --bg-secondary:  #161b22;
+    --bg-tertiary:   #1c2128;
+    --bg-hover:      #21262d;
+    --border:        #30363d;
+    --accent:        #2f81f7;
+    --accent-hover:  #1f6feb;
+    --accent-glow:   rgba(47,129,247,0.15);
+    --green:         #3fb950;
+    --green-glow:    rgba(63,185,80,0.15);
+    --orange:        #f78166;
+    --yellow:        #e3b341;
+    --purple:        #a5d6ff;
+    --text-primary:  #e6edf3;
+    --text-secondary:#8b949e;
+    --text-muted:    #484f58;
+    --code-bg:       #161b22;
+    --user-bg:       #1c2128;
+    --ai-bg:         #0d1117;
+    --radius:        12px;
+    --radius-sm:     8px;
+    --shadow:        0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ═══════════════════════════════════
+     SIDEBAR
+  ═══════════════════════════════════ */
+  .sidebar {
+    width: 260px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  .sidebar-header {
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), #a5d6ff);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .new-chat-btn {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+
+  .new-chat-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(47,129,247,0.3);
+  }
+
+  /* Model Selector */
+  .model-section {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+
+  .model-select {
+    width: 100%;
+    padding: 8px 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .model-select:focus {
+    border-color: var(--accent);
+  }
+
+  /* Quick Actions */
+  .quick-actions {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .quick-btn {
+    width: 100%;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .quick-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent);
+  }
+
+  /* Chat History */
+  .history-section {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+  }
+
+  .history-item {
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all 0.2s;
+  }
+
+  .history-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  /* Status */
+  .status-bar {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ═══════════════════════════════════
+     MAIN CHAT AREA
+  ═══════════════════════════════════ */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Top Bar */
+  .topbar {
+    padding: 14px 24px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .topbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .topbar-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    transition: all 0.2s;
+  }
+
+  .icon-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--accent);
+  }
+
+  /* Messages Area */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    scroll-behavior: smooth;
+  }
+
+  .messages::-webkit-scrollbar { width: 6px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  /* Welcome Screen */
+  .welcome {
+    max-width: 600px;
+    margin: 60px auto;
+    text-align: center;
+  }
+
+  .welcome-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+
+  .welcome h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .welcome p {
+    color: var(--text-secondary);
+    font-size: 15px;
+    margin-bottom: 32px;
+    line-height: 1.6;
+  }
+
+  .welcome-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .welcome-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .welcome-card:hover {
+    border-color: var(--accent);
+    background: var(--bg-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--accent-glow);
+  }
+
+  .welcome-card-icon { font-size: 22px; margin-bottom: 8px; }
+  .welcome-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .welcome-card-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  /* Message Bubbles */
+  .message {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+
+  .avatar.ai {
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+  }
+
+  .avatar.user {
+    background: linear-gradient(135deg, var(--green), #58a6ff);
+  }
+
+  .bubble {
+    max-width: 75%;
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    line-height: 1.65;
+    position: relative;
+  }
+
+  .bubble.ai {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px var(--radius) var(--radius) var(--radius);
+  }
+
+  .bubble.user {
+    background: var(--accent);
+    border-radius: var(--radius) 4px var(--radius) var(--radius);
+    color: white;
+  }
+
+  /* Markdown Styling inside bubble */
+  .bubble h1, .bubble h2, .bubble h3 {
+    margin: 12px 0 8px;
+    line-height: 1.3;
+  }
+  .bubble h1 { font-size: 20px; }
+  .bubble h2 { font-size: 17px; }
+  .bubble h3 { font-size: 15px; color: var(--accent); }
+
+  .bubble p { margin-bottom: 10px; }
+  .bubble p:last-child { margin-bottom: 0; }
+
+  .bubble ul, .bubble ol {
+    margin: 8px 0 8px 20px;
+  }
+  .bubble li { margin-bottom: 4px; }
+
+  .bubble strong { color: var(--yellow); }
+  .bubble em { color: var(--purple); }
+
+  /* Inline code */
+  .bubble code:not(pre code) {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12px;
+    color: var(--orange);
+  }
+
+  /* Code blocks */
+  .code-wrapper {
+    position: relative;
+    margin: 12px 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .code-header {
+    background: var(--bg-tertiary);
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-lang {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .code-actions { display: flex; gap: 6px; }
+
+  .code-btn {
+    padding: 4px 10px;
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .code-btn:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .code-btn.copied {
+    background: var(--green);
+    color: white;
+    border-color: var(--green);
+  }
+
+  .bubble pre {
+    margin: 0;
+    overflow-x: auto;
+  }
+
+  .bubble pre code {
+    font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 14px 16px;
+    display: block;
+    background: var(--code-bg) !important;
+  }
+
+  /* Typing Indicator */
+  .typing {
+    display: flex;
+    gap: 5px;
+    padding: 4px 0;
+    align-items: center;
+  }
+
+  .typing span {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Message Actions */
+  .msg-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .message:hover .msg-actions { opacity: 1; }
+
+  .msg-action-btn {
+    padding: 3px 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .msg-action-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+  }
+
+  /* ═══════════════════════════════════
+     INPUT AREA
+  ═══════════════════════════════════ */
+  .input-area {
+    padding: 16px 24px 20px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+  }
+
+  /* File Upload Preview */
+  .file-preview {
+    display: none;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .file-preview.visible {
+    display: flex;
+  }
+
+  .file-info { display: flex; align-items: center; gap: 8px; }
+  .file-name { color: var(--accent); font-weight: 500; }
+  .file-lines { color: var(--green); }
+
+  .remove-file {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px;
+    transition: color 0.2s;
+  }
+
+  .remove-file:hover { color: var(--orange); }
+
+  /* Input Box */
+  .input-box {
+    display: flex;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .input-left {
+    display: flex;
+    align-items: flex-end;
+    padding: 10px 4px 10px 12px;
+    gap: 4px;
+  }
+
+  .attach-btn {
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    transition: all 0.2s;
+  }
+
+  .attach-btn:hover {
+    background: var(--bg-hover);
+    color: var(--accent);
+  }
+
+  #file-input { display: none; }
+
+  textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    padding: 12px 8px;
+    min-height: 48px;
+    max-height: 200px;
+    font-family: inherit;
+  }
+
+  textarea::placeholder { color: var(--text-muted); }
+
+  .input-right {
+    display: flex;
+    align-items: flex-end;
+    padding: 10px 12px 10px 4px;
+    gap: 4px;
+  }
+
+  .send-btn {
+    width: 38px;
+    height: 38px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover:not(:disabled) {
+    background: var(--accent-hover);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(47,129,247,0.4);
+  }
+
+  .send-btn:disabled {
+    background: var(--bg-hover);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  .stop-btn {
+    width: 38px;
+    height: 38px;
+    background: var(--orange);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+    display: none;
+  }
+
+  .stop-btn.visible { display: flex; }
+  .stop-btn:hover { opacity: 0.85; transform: scale(1.05); }
+
+  .input-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 10px;
+  }
+
+  /* ═══════════════════════════════════
+     TOAST NOTIFICATION
+  ═══════════════════════════════════ */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--text-primary);
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* ═══════════════════════════════════
+     SCROLLBAR
+  ═══════════════════════════════════ */
+  .history-section::-webkit-scrollbar { width: 4px; }
+  .history-section::-webkit-scrollbar-track { background: transparent; }
+  .history-section::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+  }
+
+  /* ═══════════════════════════════════
+     RESPONSIVE
+  ═══════════════════════════════════ */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .welcome-grid { grid-template-columns: 1fr; }
+    .bubble { max-width: 90%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon">🤖</div>
+      <div>
+        <div class="logo-text">GLM Coder</div>
+        <div class="logo-sub">Powered by Puter.js</div>
+      </div>
+    </div>
+    <button class="new-chat-btn" onclick="newChat()">
+      ✏️ New Chat
+    </button>
+  </div>
+
+  <div class="model-section">
+    <div class="section-label">Model</div>
+    <select class="model-select" id="model-select">
+      <option value="z-ai/glm-5.1">⚡ GLM 5.1 (Best)</option>
+      <option value="z-ai/glm-5">🔥 GLM 5</option>
+      <option value="z-ai/glm-5-turbo">🚀 GLM 5 Turbo (Fast)</option>
+      <option value="z-ai/glm-4.7-flash">⚡ GLM 4.7 Flash</option>
+    </select>
+  </div>
+
+  <div class="quick-actions">
+    <div class="section-label">Quick Actions</div>
+    <button class="quick-btn" onclick="quickPrompt('Review my code for bugs and security issues')">
+      🐛 Bug Review
+    </button>
+    <button class="quick-btn" onclick="quickPrompt('Optimize this code for better performance')">
+      ⚡ Optimize Code
+    </button>
+    <button class="quick-btn" onclick="quickPrompt('Explain this code step by step')">
+      📖 Explain Code
+    </button>
+    <button class="quick-btn" onclick="quickPrompt('Write unit tests for this code')">
+      🧪 Write Tests
+    </button>
+    <button class="quick-btn" onclick="quickPrompt('Convert this code to Python')">
+      🔄 Convert Code
+    </button>
+    <button class="quick-btn" onclick="quickPrompt('Add proper documentation and comments')">
+      📝 Add Docs
+    </button>
+  </div>
+
+  <div class="history-section">
+    <div class="section-label">Recent Chats</div>
+    <div id="history-list"></div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span>GLM 5.1 Online · Free</span>
+  </div>
+</div>
+
+<!-- ═══════════════════ MAIN AREA ═══════════════════ -->
+<div class="main">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-title" id="chat-title">New Coding Session</div>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="clearChat()" title="Clear Chat">🗑️</button>
+      <button class="icon-btn" onclick="exportChat()" title="Export Chat">💾</button>
+      <button class="icon-btn" onclick="copyLastCode()" title="Copy Last Code">📋</button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="messages" id="messages">
+
+    <!-- Welcome Screen -->
+    <div class="welcome" id="welcome-screen">
+      <div class="welcome-icon">🤖</div>
+      <h1>GLM 5.1 Coding Assistant</h1>
+      <p>Your AI-powered coding companion. Paste your code, ask questions,<br>
+         and get instant help with bugs, optimization, and more!</p>
+
+      <div class="welcome-grid">
+        <div class="welcome-card" onclick="quickPrompt('Find and fix all bugs in my code')">
+          <div class="welcome-card-icon">🐛</div>
+          <div class="welcome-card-title">Bug Detection & Fix</div>
+          <div class="welcome-card-desc">Paste your code and I'll find all bugs and fix them automatically</div>
+        </div>
+        <div class="welcome-card" onclick="quickPrompt('Explain this code and how it works')">
+          <div class="welcome-card-icon">📖</div>
+          <div class="welcome-card-title">Code Explanation</div>
+          <div class="welcome-card-desc">Understand complex code with step-by-step explanations</div>
+        </div>
+        <div class="welcome-card" onclick="quickPrompt('Optimize this code for performance')">
+          <div class="welcome-card-icon">⚡</div>
+          <div class="welcome-card-title">Performance Boost</div>
+          <div class="welcome-card-desc">Optimize algorithms and improve code efficiency</div>
+        </div>
+        <div class="welcome-card" onclick="quickPrompt('Write unit tests for this code')">
+          <div class="welcome-card-icon">🧪</div>
+          <div class="welcome-card-title">Test Generation</div>
+          <div class="welcome-card-desc">Auto-generate comprehensive unit and integration tests</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Input Area -->
+  <div class="input-area">
+
+    <!-- File Preview -->
+    <div class="file-preview" id="file-preview">
+      <div class="file-info">
+        <span>📄</span>
+        <span class="file-name" id="file-name"></span>
+        <span class="file-lines" id="file-lines"></span>
+      </div>
+      <button class="remove-file" onclick="removeFile()">✕</button>
+    </div>
+
+    <!-- Input Box -->
+    <div class="input-box">
+      <div class="input-left">
+        <button class="attach-btn" onclick="document.getElementById('file-input').click()" title="Attach Code File">
+          📎
+        </button>
+        <input type="file" id="file-input"
+          accept=".py,.js,.ts,.java,.cpp,.c,.cs,.go,.php,.rb,.html,.css,.sql,.txt,.json,.xml,.yaml,.yml"
+          onchange="handleFileUpload(event)">
+      </div>
+
+      <textarea
+        id="user-input"
+        placeholder="Ask anything about coding... paste your code here or ask a question (Shift+Enter for new line)"
+        rows="1"
+        onkeydown="handleKeyDown(event)"
+        oninput="autoResize(this)">
+      </textarea>
+
+      <div class="input-right">
+        <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send (Enter)">
+          ➤
+        </button>
+        <button class="stop-btn" id="stop-btn" onclick="stopGeneration()" title="Stop">
+          ⏹
+        </button>
+      </div>
+    </div>
+
+    <div class="input-hint">
+      📎 Attach code files · Enter to send · Shift+Enter for new line · Free & Unlimited via Puter.js
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span id="toast-icon">✅</span>
+  <span id="toast-msg">Copied!</span>
+</div>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<script>
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let messages       = [];
+let isGenerating   = false;
+let stopFlag       = false;
+let attachedFile   = null;
+let chatHistory    = JSON.parse(localStorage.getItem('glm_history') || '[]');
+let lastCodeBlock  = '';
+
+// ─────────────────────────────────────────
+// MARKED CONFIG
+// ─────────────────────────────────────────
+marked.setOptions({
+  highlight: function(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      return hljs.highlight(code, { language: lang }).value;
+    }
+    return hljs.highlightAuto(code).value;
+  },
+  breaks: true,
+  gfm: true,
+});
+
+// Custom renderer for code blocks
+const renderer = new marked.Renderer();
+renderer.code = function(code, language) {
+  const lang = language || 'plaintext';
+  let highlighted;
+  try {
+    highlighted = hljs.getLanguage(lang)
+      ? hljs.highlight(code, { language: lang }).value
+      : hljs.highlightAuto(code).value;
+  } catch(e) {
+    highlighted = code;
+  }
+
+  // Store last code block
+  lastCodeBlock = code;
+
+  const id = 'code_' + Math.random().toString(36).substr(2,8);
+  return `
+    <div class="code-wrapper">
+      <div class="code-header">
+        <span class="code-lang">📝 ${lang}</span>
+        <div class="code-actions">
+          <button class="code-btn" onclick="copyCode('${id}', this)">📋 Copy</button>
+          <button class="code-btn" onclick="downloadCode('${id}', '${lang}')">💾 Download</button>
+        </div>
+      </div>
+      <pre><code id="${id}" class="hljs language-${lang}">${highlighted}</code></pre>
+    </div>`;
+};
+
+marked.use({ renderer });
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+window.addEventListener('load', () => {
+  renderHistory();
+});
+
+// ─────────────────────────────────────────
+// SEND MESSAGE
+// ─────────────────────────────────────────
+async function sendMessage() {
+  const input     = document.getElementById('user-input');
+  const userText  = input.value.trim();
+
+  if (!userText && !attachedFile) return;
+  if (isGenerating) return;
+
+  // Build final prompt
+  let finalPrompt = userText;
+  if (attachedFile) {
+    finalPrompt = `📎 **File: ${attachedFile.name}** (${attachedFile.lines} lines)\n\n\`\`\`${attachedFile.ext}\n${attachedFile.content}\n\`\`\`\n\n${userText || 'Find and fix all bugs in this code. Return the complete fixed code.'}`;
+  }
+
+  // Hide welcome screen
+  document.getElementById('welcome-screen').style.display = 'none';
+
+  // Add user message
+  messages.push({ role: 'user', content: finalPrompt });
+  appendMessage('user', userText + (attachedFile ? `\n\n📎 ${attachedFile.name}` : ''));
+
+  // Clear input
+  input.value = '';
+  input.style.height = '48px';
+  removeFile();
+
+  // Update UI
+  setGenerating(true);
+
+  // Add typing indicator
+  const typingId = addTyping();
+
+  try {
+    const model = document.getElementById('model-select').value;
+
+    // Build messages for API
+    const apiMessages = [
+      {
+        role: 'system',
+        content: `You are an expert coding assistant specialized in debugging, code review, optimization, and software development. 
+        
+When analyzing code:
+- Find ALL bugs, security issues, and bad practices
+- Provide complete fixed code (not just snippets)
+- Explain what was wrong and why
+- Use proper code blocks with language specified
+- Be thorough and precise
+
+Format responses clearly with markdown. Always use code blocks for code.`
+      },
+      ...messages
+    ];
+
+    // Stream response
+    const response = await puter.ai.chat(apiMessages, {
+      model: model,
+      stream: true
+    });
+
+    // Remove typing indicator
+    removeTyping(typingId);
+
+    // Create AI bubble
+    const bubbleId = 'bubble_' + Date.now();
+    appendStreamBubble(bubbleId);
+
+    let fullText = '';
+    stopFlag = false;
+
+    for await (const chunk of response) {
+      if (stopFlag) break;
+      const text = chunk?.text || '';
+      fullText += text;
+      updateStreamBubble(bubbleId, fullText);
+    }
+
+    // Final render
+    finalizeStreamBubble(bubbleId, fullText);
+
+    // Store in messages
+    messages.push({ role: 'assistant', content: fullText });
+
+    // Save to history
+    saveToHistory(userText || attachedFile?.name, fullText);
+
+  } catch (err) {
+    removeTyping(typingId);
+    appendMessage('ai', `❌ **Error:** ${err.message}\n\nMake sure you're logged in at [puter.com](https://puter.com) and try again.`);
+  }
+
+  setGenerating(false);
+}
+
+// ─────────────────────────────────────────
+// STREAM HELPERS
+// ─────────────────────────────────────────
+function appendStreamBubble(id) {
+  const msgs = document.getElementById('messages');
+  const div  = document.createElement('div');
+  div.className = 'message';
+  div.innerHTML = `
+    <div class="avatar ai">🤖</div>
+    <div>
+      <div class="bubble ai" id="${id}"></div>
+      <div class="msg-actions">
+        <button class="msg-action-btn" onclick="copyBubble('${id}')">📋 Copy</button>
+        <button class="msg-action-btn" onclick="regenerate()">🔄 Retry</button>
+      </div>
+    </div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+}
+
+function updateStreamBubble(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  // Show raw text while streaming
+  el.textContent = text;
+  scrollBottom();
+}
+
+function finalizeStreamBubble(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = marked.parse(text);
+  hljs.highlightAll();
+  scrollBottom();
+}
+
+// ─────────────────────────────────────────
+// MESSAGE HELPERS
+// ─────────────────────────────────────────
+function appendMessage(role, text) {
+  const msgs = document.getElementById('messages');
+  const div  = document.createElement('div');
+  div.className = `message ${role}`;
+
+  if (role === 'user') {
+    div.innerHTML = `
+      <div class="avatar user">👤</div>
+      <div>
+        <div class="bubble user">${escapeHtml(text)}</div>
+      </div>`;
+  } else {
+    const id = 'bubble_' + Date.now();
+    div.innerHTML = `
+      <div class="avatar ai">🤖</div>
+      <div>
+        <div class="bubble ai" id="${id}">${marked.parse(text)}</div>
+        <div class="msg-actions">
+          <button class="msg-action-btn" onclick="copyBubble('${id}')">📋 Copy</button>
+          <button class="msg-action-btn" onclick="regenerate()">🔄 Retry</button>
+        </div>
+      </div>`;
+  }
+
+  msgs.appendChild(div);
+  hljs.highlightAll();
+  scrollBottom();
+}
+
+function addTyping() {
+  const msgs = document.getElementById('messages');
+  const id   = 'typing_' + Date.now();
+  const div  = document.createElement('div');
+  div.className = 'message';
+  div.id = id;
+  div.innerHTML = `
+    <div class="avatar ai">🤖</div>
+    <div class="bubble ai">
+      <div class="typing">
+        <span></span><span></span><span></span>
+      </div>
+    </div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+// ─────────────────────────────────────────
+// FILE UPLOAD
+// ─────────────────────────────────────────
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target.result;
+    const lines   = content.split('\n').length;
+    const ext     = file.name.split('.').pop();
+
+    attachedFile = { name: file.name, content, lines, ext };
+
+    document.getElementById('file-name').textContent = file.name;
+    document.getElementById('file-lines').textContent = `(${lines.toLocaleString()} lines)`;
+    document.getElementById('file-preview').classList.add('visible');
+
+    showToast('📎 File attached: ' + file.name, '📎');
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function removeFile() {
+  attachedFile = null;
+  document.getElementById('file-preview').classList.remove('visible');
+  document.getElementById('file-name').textContent = '';
+  document.getElementById('file-lines').textContent = '';
+}
+
+// ─────────────────────────────────────────
+// QUICK PROMPTS
+// ─────────────────────────────────────────
+function quickPrompt(text) {
+  document.getElementById('user-input').value = text;
+  document.getElementById('user-input').focus();
+  autoResize(document.getElementById('user-input'));
+}
+
+// ─────────────────────────────────────────
+// CONTROL
+// ─────────────────────────────────────────
+function setGenerating(val) {
+  isGenerating = val;
+  document.getElementById('send-btn').disabled = val;
+  document.getElementById('stop-btn').classList.toggle('visible', val);
+}
+
+function stopGeneration() {
+  stopFlag = true;
+  setGenerating(false);
+  showToast('⏹ Generation stopped', '⏹');
+}
+
+function regenerate() {
+  if (messages.length < 2) return;
+  messages.pop(); // Remove last AI message
+  const lastUser = messages[messages.length - 1].content;
+  document.getElementById('user-input').value = lastUser;
+  messages.pop(); // Remove last user message
+  sendMessage();
+}
+
+// ─────────────────────────────────────────
+// HISTORY
+// ─────────────────────────────────────────
+function saveToHistory(question, answer) {
+  const item = {
+    id: Date.now(),
+    title: question.substring(0, 50) || 'Code Analysis',
+    timestamp: new Date().toISOString()
+  };
+  chatHistory.unshift(item);
+  if (chatHistory.length > 20) chatHistory = chatHistory.slice(0, 20);
+  localStorage.setItem('glm_history', JSON.stringify(chatHistory));
+  renderHistory();
+
+  // Update title
+  document.getElementById('chat-title').textContent =
+    item.title.length > 30 ? item.title.substring(0,30) + '...' : item.title;
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  list.innerHTML = chatHistory.map(item => `
+    <div class="history-item" title="${escapeHtml(item.title)}">
+      💬 ${escapeHtml(item.title)}
+    </div>`).join('');
+}
+
+// ─────────────────────────────────────────
+// COPY / EXPORT
+// ─────────────────────────────────────────
+function copyCode(id, btn) {
+  const code = document.getElementById(id)?.innerText;
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = '✅ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function downloadCode(id, lang) {
+  const code = document.getElementById(id)?.innerText;
+  if (!code) return;
+  const ext   = lang === 'plaintext' ? 'txt' : lang;
+  const blob  = new Blob([code], { type: 'text/plain' });
+  const a     = document.createElement('a');
+  a.href      = URL.createObjectURL(blob);
+  a.download  = `code.${ext}`;
+  a.click();
+  showToast('💾 Code downloaded!', '💾');
+}
+
+function copyBubble(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    showToast('📋 Copied to clipboard!', '📋');
+  });
+}
+
+function copyLastCode() {
+  if (!lastCodeBlock) { showToast('No code block found', '⚠️'); return; }
+  navigator.clipboard.writeText(lastCodeBlock).then(() => {
+    showToast('📋 Last code block copied!', '📋');
+  });
+}
+
+function exportChat() {
+  if (messages.length === 0) { showToast('Nothing to export', '⚠️'); return; }
+  const content = messages.map(m =>
+    `[${m.role.toUpperCase()}]\n${m.content}\n`
+  ).join('\n' + '─'.repeat(60) + '\n\n');
+  const blob = new Blob([content], { type: 'text/plain' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `glm_chat_${Date.now()}.txt`;
+  a.click();
+  showToast('💾 Chat exported!', '💾');
+}
+
+// ─────────────────────────────────────────
+// UI HELPERS
+// ─────────────────────────────────────────
+function newChat() {
+  messages = [];
+  document.getElementById('messages').innerHTML = `
+    <div class="welcome" id="welcome-screen">
+      <div class="welcome-icon">🤖</div>
+      <h1>GLM 5.1 Coding Assistant</h1>
+      <p>Your AI-powered coding companion. Paste your code, ask questions,<br>and get instant help with bugs, optimization, and more!</p>
+      <div class="welcome-grid">
+        <div class="welcome-card" onclick="quickPrompt('Find and fix all bugs in my code')">
+          <div class="welcome-card-icon">🐛</div>
+          <div class="welcome-card-title">Bug Detection & Fix</div>
+          <div class="welcome-card-desc">Paste your code and I'll find all bugs and fix them</div>
+        </div>
+        <div class="welcome-card" onclick="quickPrompt('Explain this code step by step')">
+          <div class="welcome-card-icon">📖</div>
+          <div class="welcome-card-title">Code Explanation</div>
+          <div class="welcome-card-desc">Understand complex code with detailed explanations</div>
+        </div>
+        <div class="welcome-card" onclick="quickPrompt('Optimize this code for performance')">
+          <div class="welcome-card-icon">⚡</div>
+          <div class="welcome-card-title">Performance Boost</div>
+          <div class="welcome-card-desc">Optimize algorithms and improve efficiency</div>
+        </div>
+        <div class="welcome-card" onclick="quickPrompt('Write unit tests for this code')">
+          <div class="welcome-card-icon">🧪</div>
+          <div class="welcome-card-title">Test Generation</div>
+          <div class="welcome-card-desc">Auto-generate comprehensive tests</div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('chat-title').textContent = 'New Coding Session';
+  removeFile();
+  lastCodeBlock = '';
+}
+
+function clearChat() {
+  if (confirm('Clear current chat?')) newChat();
+}
+
+function scrollBottom() {
+  const msgs = document.getElementById('messages');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function autoResize(el) {
+  el.style.height = '48px';
+  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function showToast(msg, icon = '✅') {
+  const toast   = document.getElementById('toast');
+  const toastMsg  = document.getElementById('toast-msg');
+  const toastIcon = document.getElementById('toast-icon');
+  toastMsg.textContent  = msg;
+  toastIcon.textContent = icon;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STC Cricket · Realtime Monitor V32.2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="mointor.css">
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════
+         CRITICAL OVERLAY
+         ═══════════════════════════════════════ -->
+  <div class="critical-overlay"></div>
+
+  <!-- ═══════════════════════════════════════
+         CRITICAL BANNER
+         ═══════════════════════════════════════ -->
+  <div class="critical-banner" id="criticalBanner">
+    <div class="critical-banner-card">
+      <div class="critical-banner-top">
+        <div class="critical-badge">
+          <div class="critical-live-dot"></div>
+          CRITICAL ALERT
+        </div>
+      </div>
+      <div class="critical-title" id="criticalTitle">Connection Lost</div>
+      <div class="critical-sub" id="criticalSub">One or more critical services are disconnected</div>
+      <div class="critical-reason-list" id="criticalReasonList"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+         TOPBAR — COMMAND BRIDGE
+         ═══════════════════════════════════════ -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-shell">
+        <div class="logo-box">
+          <div class="logo-pulse"></div>
+          <div class="logo-status" id="logoStatusDot"></div>
+          <div class="monitor-icon">
+            <div class="monitor-screen"></div>
+            <div class="monitor-stand"></div>
+          </div>
+          <div class="logo-waves">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+      <div class="brand">
+        <h1>STC Monitor</h1>
+        <p>Realtime Cricket Analytics</p>
+      </div>
+    </div>
+    <div class="topbar-center">
+      <div class="match-box">
+        <label>MATCH</label>
+        <input type="text" id="matchIdInput" placeholder="Enter Match ID" spellcheck="false">
+        <button class="btn btn-primary" onclick="applyMatchId()">Connect</button>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-chip">
+        <div class="live-dot"></div>
+        <span>LIVE</span>
+      </div>
+      <div class="time-box">
+        <div class="clock" id="clock">00:00:00</div>
+        <div class="date" id="dateEl">--</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════
+         PING MONITOR ROW — SIGNAL STRENGTH
+         ═══════════════════════════════════════ -->
+  <section class="ping-monitor-container">
+    <div class="ping-monitor-card" id="pingCardAdmin">
+      <div class="pm-head">
+        <div class="pm-title">🎮 Admin Panel</div>
+        <div class="pm-val" id="pmValAdmin">-- ms</div>
+      </div>
+      <div class="pm-bar">
+        <div class="pm-fill" id="pmFillAdmin"></div>
+      </div>
+    </div>
+    <div class="ping-monitor-card" id="pingCardScorebar">
+      <div class="pm-head">
+        <div class="pm-title">📺 Scorebar</div>
+        <div class="pm-val" id="pmValScorebar">-- ms</div>
+      </div>
+      <div class="pm-bar">
+        <div class="pm-fill" id="pmFillScorebar"></div>
+      </div>
+    </div>
+    <div class="ping-monitor-card" id="pingCardUpdater">
+      <div class="pm-head">
+        <div class="pm-title">⚡ Score Updater</div>
+        <div class="pm-val" id="pmValUpdater">-- ms</div>
+      </div>
+      <div class="pm-bar">
+        <div class="pm-fill" id="pmFillUpdater"></div>
+      </div>
+    </div>
+    <div class="ping-monitor-card" id="pingCardSupabase">
+      <div class="pm-head">
+        <div class="pm-title">📡 Firebase RT</div>
+        <div class="pm-val" id="pmValSupabase">-- ms</div>
+      </div>
+      <div class="pm-bar">
+        <div class="pm-fill" id="pmFillSupabase"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+         SUMMARY GRID — VITAL SIGNS
+         ═══════════════════════════════════════ -->
+  <section class="summary-grid">
+    <!-- System Health Ring -->
+    <div class="summary-card">
+      <div class="summary-label">System Health</div>
+      <div class="summary-ring" id="healthRing">
+        <span id="healthRingVal">0%</span>
+      </div>
+      <div class="summary-sub" id="healthSummary">No heartbeat received yet</div>
+    </div>
+    <!-- Realtime Traffic Ring -->
+    <div class="summary-card">
+      <div class="summary-label">Realtime Traffic</div>
+      <div class="summary-ring" id="rtRing">
+        <span id="rtRingVal">0/s</span>
+      </div>
+      <div class="summary-sub">Firebase Realtime throughput</div>
+    </div>
+    <!-- Database Quality Ring -->
+    <div class="summary-card">
+      <div class="summary-label">Database Quality</div>
+      <div class="summary-ring" id="dbRing">
+        <span id="dbRingVal">0%</span>
+      </div>
+      <div class="summary-sub" id="dbRingSummary">DB not checked yet</div>
+    </div>
+    <!-- Active Errors Big Number -->
+    <div class="summary-card" id="errorSummaryCard">
+      <div class="summary-label">Active Errors</div>
+      <div class="summary-big" id="totalErrorsBig" style="color:var(--aurora)">0</div>
+      <div class="error-badge">
+        <span class="active" id="activeErrorCount">0 active</span>
+        <span style="color:var(--muted)">·</span>
+        <span class="resolved" id="resolvedErrorCount">0 resolved</span>
+      </div>
+      <div class="progress" style="margin-top:10px">
+        <div id="errorLoadBar" style="width:0%;background:var(--coral)"></div>
+      </div>
+      <div class="progress-meta">
+        <span>Error Pressure</span>
+        <span id="errorLoadText">0%</span>
+      </div>
+      <div class="summary-actions">
+        <button class="small-btn" onclick="resetAllErrors()">Reset Errors</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+         GLOBAL CHIP
+         ═══════════════════════════════════════ -->
+  <div class="global-chip-row">
+    <div class="global-chip" id="globalChip">
+      <span>Healthy</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+         SERVICE STATUS — SERVICE TILES
+         ═══════════════════════════════════════ -->
+  <section class="service-status-panel panel">
+    <div class="panel-header">
+      <div class="panel-title">Service Status</div>
+    </div>
+    <div class="panel-body">
+      <div class="services-wrap" id="serviceList">
+        <!-- Populated by renderServices() -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+         UPDATER DEVICE PANEL — REMOTE TELEMETRY
+         ═══════════════════════════════════════ -->
+  <section class="updater-device-panel panel">
+    <div class="panel-header">
+      <div class="panel-title">📱 Score Updater Device Status</div>
+    </div>
+    <div class="panel-body">
+      <div class="updater-device-wrap">
+        <div class="updater-device-top">
+          <div>
+            <div class="updater-device-title">Mobile / Laptop Device</div>
+            <div class="updater-device-sub" id="updDeviceSub">Waiting for updater presence...</div>
+          </div>
+          <div class="status-pill offline" id="updDeviceOnlinePill">Offline</div>
+        </div>
+        <div class="updater-device-grid">
+          <div class="upd-metric-card good" id="updBatteryCard">
+            <div class="upd-metric-label">Battery</div>
+            <div class="upd-metric-value" id="updBatteryValue">--%</div>
+            <div class="upd-metric-sub" id="updBatteryMeta">Unavailable</div>
+          </div>
+          <div class="upd-metric-card good" id="updNetworkCard">
+            <div class="upd-metric-label">Connection</div>
+            <div class="upd-metric-value" id="updNetworkValue">--</div>
+            <div class="upd-metric-sub" id="updNetworkMeta">No data</div>
+          </div>
+          <div class="upd-metric-card good">
+            <div class="upd-metric-label">Signal Strength</div>
+            <div class="upd-metric-value signal-bars" id="updSignalBars">○○○○</div>
+            <div class="upd-metric-sub" id="updSignalMeta">0%</div>
+          </div>
+          <div class="upd-metric-card good" id="updPushCard">
+            <div class="upd-metric-label">Push Mode</div>
+            <div class="upd-metric-value" id="updPushModeValue">AUTO</div>
+            <div class="upd-metric-sub" id="updPushModeMeta">Realtime enabled</div>
+          </div>
+          <div class="upd-metric-card good">
+            <div class="upd-metric-label">Updater Ping</div>
+            <div class="upd-metric-value" id="updPingValue">-- ms</div>
+            <div class="upd-metric-sub" id="updPingMeta">No ping yet</div>
+          </div>
+          <div class="upd-metric-card good" id="updStabilityCard">
+            <div class="upd-metric-label">Stability</div>
+            <div class="upd-metric-value" id="updStabilityValue">--</div>
+            <div class="upd-metric-sub" id="updStabilityMeta">No network analysis</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+         FIREBASE METRICS — BILLABLE ENGINE
+         ═══════════════════════════════════════ -->
+  <section class="metrics-panel panel">
+    <div class="panel-header">
+      <div class="panel-title">🔥 Firebase Billable Metrics & Load</div>
+      <div class="small-actions">
+        <button class="small-btn" onclick="resetFirebaseMetrics()">Reset Metrics</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <!-- Summary Cards -->
+      <div class="firebase-metrics-grid">
+        <div class="metric-summary-card">
+          <div class="metric-summary-label">Estimated Reads</div>
+          <div class="metric-summary-value" id="fmReadsValue">0</div>
+          <div class="metric-summary-sub" id="fmReadsSub">0 / min</div>
+        </div>
+        <div class="metric-summary-card">
+          <div class="metric-summary-label">Estimated Writes</div>
+          <div class="metric-summary-value" id="fmWritesValue">0</div>
+          <div class="metric-summary-sub" id="fmWritesSub">0 / min</div>
+        </div>
+        <div class="metric-summary-card">
+          <div class="metric-summary-label">Listener Events</div>
+          <div class="metric-summary-value" id="fmListenerValue">0</div>
+          <div class="metric-summary-sub" id="fmListenerSub">0 / min</div>
+        </div>
+        <div class="metric-summary-card">
+          <div class="metric-summary-label">Est. Bandwidth</div>
+          <div class="metric-summary-value" id="fmBandwidthValue">0 KB</div>
+          <div class="metric-summary-sub" id="fmBandwidthSub">download + upload</div>
+        </div>
+      </div>
+      <!-- Load Bars -->
+      <div class="firebase-load-grid">
+        <div class="infra-box">
+          <div class="infra-title">Read Load</div>
+          <div class="progress">
+            <div id="fmReadLoadBar" style="width:0%;background:var(--violet)"></div>
+          </div>
+          <div class="progress-meta"><span>Load</span><span id="fmReadLoadText">0%</span></div>
+        </div>
+        <div class="infra-box">
+          <div class="infra-title">Write Load</div>
+          <div class="progress">
+            <div id="fmWriteLoadBar" style="width:0%;background:var(--violet)"></div>
+          </div>
+          <div class="progress-meta"><span>Load</span><span id="fmWriteLoadText">0%</span></div>
+        </div>
+        <div class="infra-box">
+          <div class="infra-title">Listener Load</div>
+          <div class="progress">
+            <div id="fmListenerLoadBar" style="width:0%;background:var(--violet)"></div>
+          </div>
+          <div class="progress-meta"><span>Load</span><span id="fmListenerLoadText">0%</span></div>
+        </div>
+        <div class="infra-box">
+          <div class="infra-title">Bandwidth Load</div>
+          <div class="progress">
+            <div id="fmBandwidthLoadBar" style="width:0%;background:var(--violet)"></div>
+          </div>
+          <div class="progress-meta"><span>Load</span><span id="fmBandwidthLoadText">0%</span></div>
+        </div>
+      </div>
+      <!-- Chart Bars -->
+      <div class="firebase-chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Estimated Billable Reads / sec</div>
+          <div class="chart-bars" id="fmReadsBars"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Estimated Billable Writes / sec</div>
+          <div class="chart-bars" id="fmWritesBars"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Listener Events / sec</div>
+          <div class="chart-bars" id="fmListenerBars"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Bandwidth KB / sec</div>
+          <div class="chart-bars" id="fmBandwidthBars"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+         MIDDLE GRID — CORE DATA LAYER
+         ═══════════════════════════════════════ -->
+  <section class="middle-grid">
+    <!-- Alerts Panel -->
+    <div class="panel middle-alerts fill-panel">
+      <div class="panel-header">
+        <div class="panel-title">Alerts</div>
+        <div class="small-actions">
+          <button class="small-btn" onclick="clearAlerts()">Clear</button>
+        </div>
+      </div>
+      <div class="panel-body" style="overflow:auto;flex:1;min-height:0">
+        <div class="alert-list" id="alertList"></div>
+      </div>
+    </div>
+
+    <!-- Live Match Feed — THE SCOREBOARD -->
+    <div class="panel middle-live fill-panel">
+      <div class="panel-header">
+        <div class="panel-title">Live Match Feed</div>
+        <div class="small-actions">
+          <button class="small-btn" onclick="manualRefresh()">Refresh</button>
+        </div>
+      </div>
+      <div class="panel-body" style="overflow:auto;flex:1;min-height:0">
+        <div class="match-shell">
+          <!-- Match Top -->
+          <div class="match-top">
+            <div class="match-id" id="matchBadge">my_match_999</div>
+            <div class="status-pill offline" id="matchTypePill">limited</div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <div class="match-meta-item" id="targetValue">Target 0</div>
+              <div class="match-meta-item" id="rrrValue">RRR 0.00</div>
+            </div>
+          </div>
+
+          <!-- Score Grid -->
+          <div class="score-grid">
+            <div class="score-side left">
+              <div class="team-code" id="batTeam">BAT</div>
+              <div class="score-big" id="scoreValue">0/0</div>
+              <div class="score-meta" id="oversValue">0.0 overs</div>
+            </div>
+            <div class="vs-col">
+              <div class="vs-line"></div>
+              <div class="vs-text">VS</div>
+              <div class="vs-line"></div>
+            </div>
+            <div class="score-side right">
+              <div class="team-code" id="bowlTeam">BOWL</div>
+            </div>
+          </div>
+
+          <!-- Over Balls -->
+          <div class="over-card">
+            <div class="over-head">
+              <div class="over-label">Current Over</div>
+              <div class="status-pill offline" id="freeHitPill">No Free Hit</div>
+            </div>
+            <div class="over-balls" id="overBalls"></div>
+          </div>
+
+          <!-- Player Cards -->
+          <div class="players-grid">
+            <div class="player-card striker">
+              <div class="player-role">Striker</div>
+              <div class="avatar" id="strikerAvatar">S</div>
+              <div class="player-name striker-name" id="strikerName">Not Connected</div>
+              <div class="player-stats" id="strikerStats">0 (0) • 4s:0 • 6s:0</div>
+            </div>
+            <div class="player-card">
+              <div class="player-role">Non-Striker</div>
+              <div class="avatar" id="nonStrikerAvatar">N</div>
+              <div class="player-name" id="nonStrikerName">Not Connected</div>
+              <div class="player-stats" id="nonStrikerStats">0 (0) • 4s:0 • 6s:0</div>
+            </div>
+            <div class="player-card bowler">
+              <div class="player-role">Current Bowler</div>
+              <div class="avatar" id="bowlerAvatar">B</div>
+              <div class="player-name bowler-name" id="bowlerName">Not Connected</div>
+              <div class="player-stats" id="bowlerStats">0-0 0.0</div>
+            </div>
+          </div>
+
+          <!-- Upcoming Batter -->
+          <div class="upcoming-card" id="upcomingCard">
+            <div class="avatar" id="upcomingAvatar" style="width:40px;height:40px;font-size:.8rem">U</div>
+            <div>
+              <div class="upcoming-tag">Upcoming Batter</div>
+              <div class="upcoming-name" id="upcomingName">Unknown</div>
+            </div>
+          </div>
+
+          <!-- Sparkline -->
+          <div class="sparkline-wrap">
+            <div class="spark-title">Recent Overs (Runs Scored)</div>
+            <div class="sparkline-container" id="sparklineContainer">
+              <span style="color:var(--muted);font-size:.7rem;width:100%;text-align:center;">Waiting for over
+                completion...</span>
+            </div>
+          </div>
+
+          <!-- Stat Mini Grid -->
+          <div class="stat-grid">
+            <div class="stat-mini">
+              <div class="label">Runs</div>
+              <div class="value" id="miniRuns">0</div>
+            </div>
+            <div class="stat-mini">
+              <div class="label">Wickets</div>
+              <div class="value" id="miniWkts">0</div>
+            </div>
+            <div class="stat-mini">
+              <div class="label">Balls</div>
+              <div class="value" id="miniBalls">0</div>
+            </div>
+            <div class="stat-mini">
+              <div class="label">CRR</div>
+              <div class="value" id="miniCrr">0.00</div>
+            </div>
+            <div class="stat-mini">
+              <div class="label">Partnership</div>
+              <div class="value" id="miniPart">0 (0)</div>
+            </div>
+            <div class="stat-mini">
+              <div class="label">Win Prob</div>
+              <div class="value" id="miniWinProb">0%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- God Mode + Infra -->
+    <div class="middle-god-col">
+      <!-- God Mode Controls -->
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-header">
+          <div class="panel-title">🛑 God Mode Controls</div>
+        </div>
+        <div class="panel-body">
+          <div class="settings-section">
+            <label class="toggle-label sound-toggle">
+              <input type="checkbox" id="alertSoundToggle" checked onchange="toggleAlertSound(this.checked)">
+              <span class="toggle-icon">🔊</span>
+              <span class="toggle-text">Critical Alert Sound</span>
+              <span class="toggle-status" id="soundStatus">ON</span>
+            </label>
+          </div>
+          <div class="god-mode-grid">
+            <button class="btn-god danger" onclick="godModeKillGraphics()">🛑 Kill Graphics</button>
+            <button class="btn-god warn" onclick="godModeAlertScorer()">💬 Msg Scorer</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infrastructure Health -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Infrastructure Health</div>
+        </div>
+        <div class="panel-body">
+          <div class="infra-grid">
+            <div class="infra-box">
+              <div class="infra-title">Realtime Quality</div>
+              <div class="progress">
+                <div id="rtQualityBar" style="width:0%;background:var(--violet)"></div>
+              </div>
+              <div class="progress-meta"><span>Quality</span><span id="rtQualityText">0%</span></div>
+            </div>
+            <div class="infra-box">
+              <div class="infra-title">DB Quality</div>
+              <div class="progress">
+                <div id="dbQualityBar" style="width:0%;background:var(--violet)"></div>
+              </div>
+              <div class="progress-meta"><span>Quality</span><span id="dbQualityText">0%</span></div>
+            </div>
+            <div class="infra-box">
+              <div class="infra-title">Error Pressure</div>
+              <div class="progress">
+                <div id="errorLoadBarInfra" style="width:0%;background:var(--coral)"></div>
+              </div>
+              <div class="progress-meta"><span>Pressure</span><span id="errorLoadTextInfra">0%</span></div>
+            </div>
+            <div class="infra-box">
+              <div class="infra-title">HTTP Load</div>
+              <div class="progress">
+                <div id="httpLoadBar" style="width:0%;background:var(--violet)"></div>
+              </div>
+              <div class="progress-meta"><span>Req/s</span><span id="httpLoadText">0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System Log -->
+    <div class="panel middle-log fill-panel">
+      <div class="panel-header">
+        <div class="panel-title">System Log</div>
+        <div class="small-actions">
+          <button class="small-btn" id="pauseLogBtn" onclick="togglePauseLogs()">Pause</button>
+          <button class="small-btn" onclick="clearLogs()">Clear</button>
+        </div>
+      </div>
+      <div class="panel-body" style="overflow:auto;flex:1;min-height:0">
+        <div class="log-list" id="logList"></div>
+      </div>
+    </div>
+
+    <!-- Traffic Charts -->
+    <div class="panel middle-traffic fill-panel">
+      <div class="panel-header">
+        <div class="panel-title">Traffic</div>
+      </div>
+      <div class="panel-body">
+        <div class="chart-card" style="margin-bottom:12px">
+          <div class="chart-title">Realtime Msgs / second</div>
+          <div class="chart-bars" id="rtBars"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">HTTP Requests / second</div>
+          <div class="chart-bars" id="httpBars"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+         CHARTS ROW — WIN PROB + PARTNERSHIP
+         ═══════════════════════════════════════ -->
+  <section class="charts-row">
+    <div class="chart-modern-card">
+      <div class="chart-modern-title">
+        <h3><i>📈</i> Win Probability Trend</h3>
+        <span class="chart-modern-badge">LIVE</span>
+      </div>
+      <canvas id="winProbChart"></canvas>
+    </div>
+    <div class="chart-modern-card">
+      <div class="chart-modern-title">
+        <h3><i>📊</i> Partnerships per Wicket</h3>
+        <span class="chart-modern-badge">PER WKT</span>
+      </div>
+      <canvas id="partnershipChart"></canvas>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+         POWERPLAY + BOWLING CHANGES
+         ═══════════════════════════════════════ -->
+  <section class="stats-row">
+    <div class="stats-modern-card">
+      <div class="stats-modern-title">⚡ Phase Analysis</div>
+      <div id="powerplayStats">
+        <div style="color:var(--muted);font-size:.76rem">Waiting for match data...</div>
+      </div>
+    </div>
+    <div class="stats-modern-card">
+      <div class="stats-modern-title">🔄 Bowling Changes</div>
+      <div id="bowlingChangesList">
+        <div style="color:var(--muted);font-size:.76rem">No bowling changes recorded</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+         BOTTOM GRID — TOPOLOGY + PROFILE
+         ═══════════════════════════════════════ -->
+  <section class="bottom-grid">
+    <!-- Data Flow Topology -->
+    <div class="panel flow-panel">
+      <div class="panel-header">
+        <div class="panel-title">Data Flow Topology</div>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <div class="topology-sideflow">
+          <div class="topology-sideflow-bg"></div>
+          <svg class="topology-sideflow-svg" id="flowSvg" viewBox="0 0 800 330" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <filter id="flowGlow">
+                <feGaussianBlur stdDeviation="6" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <!-- Rail Glows -->
+            <path class="flow-rail-glow" d="M 145 82 C 240 82, 310 165, 375 165" />
+            <path class="flow-rail-glow" d="M 145 248 C 240 248, 310 165, 375 165" />
+            <path class="flow-rail-glow" d="M 425 165 C 500 165, 580 165, 655 165" />
+            <!-- Rails -->
+            <path class="flow-rail" id="path-admin" d="M 145 82 C 240 82, 310 165, 375 165" />
+            <path class="flow-rail" id="path-updater" d="M 145 248 C 240 248, 310 165, 375 165" />
+            <path class="flow-rail" id="path-scorebar" d="M 425 165 C 500 165, 580 165, 655 165" />
+          </svg>
+          <!-- Tree Nodes -->
+          <div class="tree-node tree-node-admin" style="left:15%;top:25%">
+            <div class="tree-icon">🎮</div>
+            <div class="tree-label">Admin</div>
+          </div>
+          <div class="tree-node tree-node-updater" style="left:15%;top:75%">
+            <div class="tree-icon">⚡</div>
+            <div class="tree-label">Updater</div>
+          </div>
+          <div class="tree-node tree-node-db" style="left:50%;top:50%">
+            <div class="tree-icon">🗄️</div>
+            <div class="tree-label tree-label-db">Firebase</div>
+          </div>
+          <div class="tree-node tree-node-scorebar" style="left:85%;top:50%">
+            <div class="tree-icon">📺</div>
+            <div class="tree-label">Scorebar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Profile -->
+    <div class="panel profile-panel">
+      <div class="panel-header">
+        <div class="panel-title">Live Profile</div>
+      </div>
+      <div class="panel-body">
+        <div class="profile-card">
+          <div class="profile-empty" id="profileEmpty">No active player profile broadcast yet.</div>
+          <div class="profile-wrap" id="profileWrap" style="display:none">
+            <div class="profile-avatar" id="profileAvatar">P</div>
+            <div>
+              <div class="profile-role" id="profileRole">PLAYER</div>
+              <div class="profile-name" id="profileName">Unknown</div>
+              <div class="profile-meta" id="profileMeta">No profile data</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+         SCRIPTS
+         ═══════════════════════════════════════ -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="monitor.js"></script>
+</body>
+
+</html>

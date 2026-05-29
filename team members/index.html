@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0">
+    <title>Team Cards - OBS Live Stream Overlay</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+
+<body>
+
+    <!-- Background blur layer for OBS camera -->
+    <div class="bg-blur-layer" id="bgBlurLayer"></div>
+
+    <!-- Main Container -->
+    <div class="overlay-container" id="overlayContainer">
+
+        <!-- Header -->
+        <header class="header" id="cardHeader">
+
+            <div class="logo-frame" id="teamLogoFrame">
+                <img src="" alt="" class="logo-img" id="teamLogoImg" onerror="this.style.display='none'">
+                <span class="logo-fallback" id="teamLogoFallback"></span>
+            </div>
+
+            <div class="event-title" id="eventTitle">
+                <span class="event-title-word">Battle</span>
+                <span class="event-title-word of">of</span>
+                <span class="event-title-word">the</span>
+                <span class="event-title-word golds">Golds</span>
+            </div>
+            <div class="header-divider"></div>
+
+            <h1 class="team-name" id="teamName">School Name</h1>
+            <div class="venue-line" id="venueLine">
+                <span class="venue-dot"></span>
+                <span class="venue-text">Live from Bernard Aluvihare Ground</span>
+                <span class="venue-dot"></span>
+            </div>
+        </header>
+
+        <!-- Player Cards Grid - Dynamically populated -->
+        <section class="players-grid" id="playersGrid">
+            <!-- Cards will be injected by JavaScript -->
+        </section>
+
+        <!-- Branding Bar -->
+        <div class="branding-bar" id="brandingBar">
+            <div class="branding-content">
+                <span class="branding-text">Thomians' Media</span>
+                <div class="branding-stripes">
+                    <span class="stripe stripe-1"></span>
+                    <span class="stripe stripe-2"></span>
+                    <span class="stripe stripe-3"></span>
+                </div>
+            </div>
+            <div class="branding-line"></div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
